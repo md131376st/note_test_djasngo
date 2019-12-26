@@ -1,0 +1,70 @@
+import json
+from unittest.mock import patch
+from django.test import TestCase, RequestFactory
+from requests import Response
+
+
+def return_esb_get_quality_oss_device():
+    return json.dumps()
+
+
+def return_esb_get_quality_oss_dslaminfo():
+    return json.dumps()
+
+
+def return_esb_get_log_quality():
+    return json.dumps()
+
+
+class TestLineQuality(TestCase):
+    def setUp(self):
+        self.form = DynamicForm(
+            name='تست کیفیت و سرعت',
+            html='test',
+            form_type='load_line_quality',
+            message='test',
+            show_message=True,
+            redirect_url='test',
+            action=2,
+            category_id=0,
+            active=True,
+            captcha_enabled=True,
+            captcha_container=None,
+            captcha_duration=0,
+            captcha_tries=0,
+            render_handler='line_quality',
+            form_id=14,
+            next_form_alias='test-speed',
+            attribute='test',
+            alias='line_quality',
+            authenticate_required=True)
+        self.username = '44255880'
+        self.type = 'adsl'
+        self.factory = RequestFactory()
+        self.context = {
+            'media': 'mobile',
+            'username': self.username,
+            'serviceType': self.type,
+            'token': None,
+            'userinfo': return_user_info(),
+            'domain': 'PORTAL',
+            'type': self.type,
+            'out': 'json',
+        }
+    @patch('web.apps.main_app.handlers.line_quality.get_user_info')
+    @patch('web.apps.main_app.handlers.line_quality.requests.get')
+    def test_get_line_quality(self,mock_result,userinfo):
+        userinfo.return_value = return_user_info()
+        self.fake_response = Response()
+        self.fake_response.status_code = 200
+        self.fake_response._content = bytes(return_esb_get_quality_oss_device(), encoding='utf8')
+        self.fake_response1 = Response()
+        self.fake_response1.status_code = 200
+        self.fake_response1._content = bytes(return_esb_get_quality_oss_dslaminfo(), encoding='utf8')
+        self.fake_response2 = Response()
+        self.fake_response2.status_code = 200
+        self.fake_response2._content = bytes(return_esb_get_log_quality(), encoding='utf8')
+        mock_result.side_effect = [self.fake_response,self.fake_response1,self.fake_response2]
+        get_line_quality(self.form, self.factory, self.context)
+        self.assertEqual(self.context['down_stream'],8192 )
+
