@@ -1,0 +1,4 @@
+ self.request = self.factory.get('test', content_type='application/json')
+ self.request.query_params = {'username': self.username, 'type': self.type}
+  self.request = self.factory.post('test', content_type='application/json')
+ self.request.data = {'username': self.username, 'type': self.type}
